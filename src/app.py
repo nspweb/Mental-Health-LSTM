@@ -12,9 +12,13 @@ st.sidebar.write("Enter your text to predict the sentiment!")
 # === Load Tokenizer ===
 @st.cache_resource
 def load_tokenizer(path='tokenizer.pickle'):
+    if not os.path.exists(path):
+        st.error(f"❌ File tokenizer tidak ditemukan di path: {path}. Pastikan file ada di direktori aplikasi.")
+        return None
     with open(path, 'rb') as handle:
         tokenizer = pickle.load(handle)
     return tokenizer
+
 
 # === Load Trained Model ===
 @st.cache_resource
