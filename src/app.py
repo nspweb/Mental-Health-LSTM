@@ -36,10 +36,26 @@ def preprocess_text(text):
     return " ".join(cleaned_words)
 
 # Antarmuka Streamlit
-st.title("Mental Health Prediction (LSTM)")
-st.write("Aplikasi ini memprediksi apakah teks yang Anda masukkan berkaitan dengan **Anxiety** atau **Depression**.")
+st.markdown("""
+    <style>
+        .css-1v3fvcr {
+            background-color: #DFF6FF;
+            padding: 10px;
+            border-radius: 8px;
+        }
+    </style>
+""", unsafe_allow_html=True)
 
-input_text = st.text_area("Masukkan teks di sini:")
+st.title("🌱 Mental Health Prediction (LSTM) 🌱")
+st.markdown("""
+Aplikasi ini memprediksi apakah teks yang Anda masukkan berkaitan dengan **Anxiety** atau **Depression**.
+""")
+
+col1, col2 = st.columns(2)
+with col1:
+    input_text = st.text_area("Masukkan teks di sini:")
+with col2:
+    st.image("path_to_image/mental_health_image.png", use_column_width=True)
 
 if st.button("Prediksi"):
     if input_text.strip() == "":
@@ -49,10 +65,11 @@ if st.button("Prediksi"):
         sequence = tokenizer.texts_to_sequences([cleaned_text])
         padded_sequence = pad_sequences(sequence, maxlen=100, padding='post', truncating='post')
 
-        prediction = model.predict(padded_sequence)
-        label_index = np.argmax(prediction)
+        with st.spinner("Memproses..."):
+            prediction = model.predict(padded_sequence)
+            label_index = np.argmax(prediction)
 
         if label_index == 0:
-            st.success("Hasil prediksi: **Anxiety**")
+            st.success("Hasil prediksi: **Anxiety**", icon="😟")
         else:
-            st.success("Hasil prediksi: **Depression**")
+            st.success("Hasil prediksi: **Depression**", icon="😔")
