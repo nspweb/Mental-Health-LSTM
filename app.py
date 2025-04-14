@@ -10,13 +10,16 @@ import os
 st.sidebar.title("Mental Health Sentiment Analyzer")
 st.sidebar.write("Enter your text to predict the sentiment!")
 
+# === Constants ===
+TOKENIZER_PATH = os.path.join("src", "tokenizer.pickle")
+MODEL_PATH = os.path.join("src", "model_mental_health_v1.keras")
+
 # === Load Tokenizer ===
 @st.cache_resource
-def load_tokenizer(path=r'D:\3 matkul\Mental Health Using LSTM\src\tokenizer.pickle'):
+def load_tokenizer(path=TOKENIZER_PATH):
     try:
-        st.write(f"🔍 Checking tokenizer path: {path}")
         if not os.path.exists(path):
-            st.error(f"❌ File tokenizer tidak ditemukan di path: {path}")
+            st.error(f"❌ File tokenizer tidak ditemukan di path: {os.path.abspath(path)}")
             return None
         with open(path, 'rb') as handle:
             tokenizer = pickle.load(handle)
@@ -24,73 +27,57 @@ def load_tokenizer(path=r'D:\3 matkul\Mental Health Using LSTM\src\tokenizer.pic
     except Exception as e:
         st.error(f"❌ Terjadi kesalahan saat memuat tokenizer: {e}")
         return None
-    
+
 # === Load Trained Model ===
 @st.cache_resource
-def load_trained_model(model_path=r'D:\3 matkul\Mental Health Using LSTM\src\model_mental_health_v1.keras'):
+def load_trained_model(path=MODEL_PATH):
     try:
-        if not os.path.exists(model_path):
-            st.error(f"❌ File model tidak ditemukan di path: {model_path}.")
+        if not os.path.exists(path):
+            st.error(f"❌ File model tidak ditemukan di path: {os.path.abspath(path)}")
             return None
-        model = tf.keras.models.load_model(model_path)
+        model = tf.keras.models.load_model(path)
         return model
     except Exception as e:
-        st.error(f"❌ Failed to load model: {e}")
-        return None 
+        st.error(f"❌ Gagal memuat model: {e}")
+        return None
 
-# === Text Cleaning Function ===
+# === Text Cleaning ===
 def clean_text(text):
     text = text.lower()
-    text = re.sub(r'https?://\S+|www\.\S+', '', text)  # remove URLs
-    text = re.sub(r'<.*?>', '', text)  # remove HTML tags
-    text = re.sub(r'[%s]' % re.escape(string.punctuation), '', text)  # remove punctuation
-    text = re.sub(r'\n', ' ', text)  # remove newline characters
-    text = re.sub(r'\w*\d\w*', '', text)  # remove words containing numbers
+    text = re.sub(r'https?://\S+|www\.\S+', '', text)
+    text = re.sub(r'<.*?>', '', text)
+    text = re.sub(r'[%s]' % re.escape(string.punctuation), '', text)
+    text = re.sub(r'\n', ' ', text)
+    text = re.sub(r'\w*\d\w*', '', text)
     return text.strip()
 
-# === Predict Function ===
+# === Prediction ===
 def predict_sentiment(model, tokenizer, text, maxlen=100):
     cleaned_text = clean_text(text)
     sequence = tokenizer.texts_to_sequences([cleaned_text])
     padded = pad_sequences(sequence, maxlen=maxlen)
-    prediction = model.predict(padded)
-    labels = ['Normal', 'Stress', 'Depression']  # Replace with your actual labels
+    prediction = model.predict(padded, verbose=0)
+    labels = ['Normal', 'Stress', 'Depression']
     predicted_label = labels[prediction.argmax()]
     return predicted_label, prediction.max() * 100
 
 # === Main App ===
 def main():
-    # Display title and description
     st.title("🌱 Mental Health Text Analysis")
-    st.markdown("""
-    This tool predicts whether the text you input relates to **Anxiety** or **Depression**.
-    """)
-    
-    # Debug: Check if tokenizer file exists
-    debug_tokenizer_path = r'D:\3 matkul\Mental Health Using LSTM\src\tokenizer.pickle'
-    debug_model_path = r'D:\3 matkul\Mental Health Using LSTM\src\model_mental_health_v1.keras'
+    st.markdown("This tool predicts whether the input text relates to **Normal**, **Stress**, or **Depression**.")
 
-    st.write("📂 Tokenizer file exists:", os.path.exists(debug_tokenizer_path))
-    st.write("📂 Model file exists:", os.path.exists(debug_model_path))
-
-    # Text input
     input_text = st.text_area("Enter your text here:", height=200)
-    
+
     if st.button("Analyze Text"):
         if not input_text.strip():
             st.warning("Please enter some text to analyze.")
         else:
-            # Load model and tokenizer
             tokenizer = load_tokenizer()
             model = load_trained_model()
-            
-            if model and tokenizer:
-                st.success("✅ Model and tokenizer loaded!")
 
-                # Predict sentiment
+            if model and tokenizer:
                 predicted_label, confidence = predict_sentiment(model, tokenizer, input_text)
-                
-                # Display the result
+
                 if predicted_label == 'Normal':
                     st.markdown(f"""
                     <div style='background-color:#E8E8FF; padding:15px; border-radius:10px;'>
@@ -113,14 +100,15 @@ def main():
                     </div>
                     """, unsafe_allow_html=True)
 
-                # Add disclaimer
                 st.markdown("""
                 <div style='font-size:0.8em; margin-top:20px;'>
                 <b>Disclaimer:</b> This tool provides only a computational analysis and is not a substitute for professional mental health evaluation.
-                If you or someone you know is struggling with mental health issues, please consult with a qualified healthcare professional.
+                Please consult a qualified healthcare provider if needed.
                 </div>
                 """, unsafe_allow_html=True)
 
-# === Run ===
+            else:
+                st.error("Model atau tokenizer tidak tersedia. Periksa kembali file dan path-nya.")
+
 if __name__ == '__main__':
     main()
