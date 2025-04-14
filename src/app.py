@@ -4,8 +4,8 @@ import numpy as np
 import re
 import string
 import nltk
-import pickle
 import os
+import pickle
 from nltk.corpus import stopwords
 from nltk.stem import WordNetLemmatizer
 from tensorflow.keras.preprocessing.sequence import pad_sequences
@@ -78,15 +78,7 @@ if st.button("Prediksi"):
         st.warning("Silakan masukkan teks terlebih dahulu.")
     else:
         cleaned_text = preprocess_text(input_text)
-        
-        # Menampilkan debugging info
-        st.info(f"Cleaned text: {cleaned_text}")
-        
         sequence = tokenizer.texts_to_sequences([cleaned_text])
-        
-        # Menampilkan sequence untuk debugging
-        st.info(f"Sequence length: {len(sequence[0])}")
-        
         padded_sequence = pad_sequences(sequence, maxlen=100, padding='post', truncating='post')
 
         with st.spinner("Memproses..."):
