@@ -12,7 +12,7 @@ st.sidebar.write("Enter your text to predict the sentiment!")
 
 # === Load Tokenizer ===
 @st.cache_resource
-def load_tokenizer(path='tokenizer.pickle'):
+def load_tokenizer(path='D:\3 matkul\Mental Health Using LSTM\src\tokenizer.pickle'):
     try:
         if not os.path.exists(path):
             st.error(f"❌ File tokenizer tidak ditemukan di path: {path}.")
@@ -26,7 +26,7 @@ def load_tokenizer(path='tokenizer.pickle'):
 
 # === Load Trained Model ===
 @st.cache_resource
-def load_trained_model(model_path='model_mental_health_v1.keras'):
+def load_trained_model(model_path='D:\3 matkul\Mental Health Using LSTM\src\model_mental_health_v1.keras'):
     try:
         if not os.path.exists(model_path):
             st.error(f"❌ File model tidak ditemukan di path: {model_path}.")
