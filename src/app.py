@@ -56,7 +56,8 @@ col1, col2 = st.columns(2)
 with col1:
     input_text = st.text_area("Masukkan teks di sini:")
 with col2:
-    st.image("D:\3 matkul\Mental Health Using LSTM\images.jpg", use_column_width=True)
+    st.image("src/images.jpg", use_column_width=True)
+
 
 if st.button("Prediksi"):
     if input_text.strip() == "":
