@@ -28,10 +28,13 @@ def load_tokenizer(path='tokenizer.pickle'):
 @st.cache_resource
 def load_trained_model(model_path='model_mental_health_v1.keras'):
     try:
+        if not os.path.exists(model_path):
+            st.error(f"❌ File model tidak ditemukan di path: {model_path}.")
+            return None
         model = tf.keras.models.load_model(model_path)
         return model
     except Exception as e:
-        st.sidebar.error(f"❌ Failed to load model: {e}")
+        st.error(f"❌ Failed to load model: {e}")
         return None
 
 # === Text Cleaning Function ===
@@ -73,7 +76,7 @@ def main():
             tokenizer = load_tokenizer()
             model = load_trained_model()
             
-            if model:
+            if model and tokenizer:
                 st.success("✅ Model and tokenizer loaded!")
 
                 # Predict sentiment
