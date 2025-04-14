@@ -4,21 +4,36 @@ import numpy as np
 import re
 import string
 import nltk
+import pickle
+import os
 from nltk.corpus import stopwords
 from nltk.stem import WordNetLemmatizer
-from tensorflow.keras.preprocessing.text import Tokenizer
 from tensorflow.keras.preprocessing.sequence import pad_sequences
 
 # Download resource NLTK jika belum
 nltk.download('stopwords')
 nltk.download('wordnet')
 
-import os
+# Path ke model dan tokenizer
 model_path = os.path.join('src', 'model_mental_health_v1.h5')
-model = tf.keras.models.load_model(model_path)
+tokenizer_path = os.path.join('src', 'tokenizer.pickle')
 
-# Inisialisasi Tokenizer (harus sama dengan saat training)
-tokenizer = Tokenizer(num_words=10000, oov_token="<OOV>")
+# Load model
+try:
+    model = tf.keras.models.load_model(model_path)
+    print(f"Model berhasil dimuat dari {model_path}")
+except Exception as e:
+    st.error(f"Error loading model: {e}")
+    st.stop()
+
+# Load tokenizer dari file pickle
+try:
+    with open(tokenizer_path, 'rb') as handle:
+        tokenizer = pickle.load(handle)
+    print(f"Tokenizer berhasil dimuat dari {tokenizer_path}")
+except Exception as e:
+    st.error(f"Error loading tokenizer: {e}")
+    st.stop()
 
 # Fungsi preprocessing
 def preprocess_text(text):
@@ -58,13 +73,20 @@ with col1:
 with col2:
     st.image("src/images.jpg", use_column_width=True)
 
-
 if st.button("Prediksi"):
     if input_text.strip() == "":
         st.warning("Silakan masukkan teks terlebih dahulu.")
     else:
         cleaned_text = preprocess_text(input_text)
+        
+        # Menampilkan debugging info
+        st.info(f"Cleaned text: {cleaned_text}")
+        
         sequence = tokenizer.texts_to_sequences([cleaned_text])
+        
+        # Menampilkan sequence untuk debugging
+        st.info(f"Sequence length: {len(sequence[0])}")
+        
         padded_sequence = pad_sequences(sequence, maxlen=100, padding='post', truncating='post')
 
         with st.spinner("Memproses..."):
