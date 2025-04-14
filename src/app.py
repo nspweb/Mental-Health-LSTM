@@ -12,7 +12,7 @@ st.sidebar.write("Enter your text to predict the sentiment!")
 
 # === Load Tokenizer ===
 @st.cache_resource
-def load_tokenizer(path='D:\3 matkul\Mental Health Using LSTM\src\tokenizer.pickle'):
+def load_tokenizer(path=r'D:\3 matkul\Mental Health Using LSTM\src\tokenizer.pickle'):
     try:
         if not os.path.exists(path):
             st.error(f"❌ File tokenizer tidak ditemukan di path: {path}.")
@@ -23,10 +23,10 @@ def load_tokenizer(path='D:\3 matkul\Mental Health Using LSTM\src\tokenizer.pick
     except Exception as e:
         st.error(f"❌ Terjadi kesalahan saat memuat tokenizer: {e}")
         return None
-
+    
 # === Load Trained Model ===
 @st.cache_resource
-def load_trained_model(model_path='D:\3 matkul\Mental Health Using LSTM\src\model_mental_health_v1.keras'):
+def load_trained_model(model_path=r'D:\3 matkul\Mental Health Using LSTM\src\model_mental_health_v1.keras'):
     try:
         if not os.path.exists(model_path):
             st.error(f"❌ File model tidak ditemukan di path: {model_path}.")
@@ -35,7 +35,7 @@ def load_trained_model(model_path='D:\3 matkul\Mental Health Using LSTM\src\mode
         return model
     except Exception as e:
         st.error(f"❌ Failed to load model: {e}")
-        return None
+        return None 
 
 # === Text Cleaning Function ===
 def clean_text(text):
