@@ -14,8 +14,9 @@ st.sidebar.write("Enter your text to predict the sentiment!")
 @st.cache_resource
 def load_tokenizer(path=r'D:\3 matkul\Mental Health Using LSTM\src\tokenizer.pickle'):
     try:
+        st.write(f"🔍 Checking tokenizer path: {path}")
         if not os.path.exists(path):
-            st.error(f"❌ File tokenizer tidak ditemukan di path: {path}.")
+            st.error(f"❌ File tokenizer tidak ditemukan di path: {path}")
             return None
         with open(path, 'rb') as handle:
             tokenizer = pickle.load(handle)
