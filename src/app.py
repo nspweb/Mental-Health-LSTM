@@ -13,8 +13,9 @@ from tensorflow.keras.preprocessing.sequence import pad_sequences
 nltk.download('stopwords')
 nltk.download('wordnet')
 
-# Load model (gunakan path relatif untuk deployment)
-model = tf.keras.models.load_model('model_mental_health_v1.h5')
+import os
+model_path = os.path.join('src', 'model_mental_health_v1.h5')
+model = tf.keras.models.load_model(model_path)
 
 # Inisialisasi Tokenizer (harus sama dengan saat training)
 tokenizer = Tokenizer(num_words=10000, oov_token="<OOV>")
