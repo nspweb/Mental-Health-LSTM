@@ -1,114 +1,58 @@
 import streamlit as st
+import tensorflow as tf
+import numpy as np
 import re
 import string
-import pickle
-import tensorflow as tf
+import nltk
+from nltk.corpus import stopwords
+from nltk.stem import WordNetLemmatizer
+from tensorflow.keras.preprocessing.text import Tokenizer
 from tensorflow.keras.preprocessing.sequence import pad_sequences
-import os
 
-# === Sidebar ===
-st.sidebar.title("Mental Health Sentiment Analyzer")
-st.sidebar.write("Enter your text to predict the sentiment!")
+# Download resource NLTK jika belum
+nltk.download('stopwords')
+nltk.download('wordnet')
 
-# === Constants ===
-TOKENIZER_PATH = os.path.join("src", "tokenizer.pickle")
-MODEL_PATH = os.path.join("src", "model_mental_health_v1.keras")
+# Load model (gunakan path relatif untuk deployment)
+model = tf.keras.models.load_model('model_mental_health_v1.keras')
 
-# === Load Tokenizer ===
-@st.cache_resource
-def load_tokenizer(path=TOKENIZER_PATH):
-    try:
-        if not os.path.exists(path):
-            st.error(f"❌ File tokenizer tidak ditemukan di path: {os.path.abspath(path)}")
-            return None
-        with open(path, 'rb') as handle:
-            tokenizer = pickle.load(handle)
-        return tokenizer
-    except Exception as e:
-        st.error(f"❌ Terjadi kesalahan saat memuat tokenizer: {e}")
-        return None
+# Inisialisasi Tokenizer (harus sama dengan saat training)
+tokenizer = Tokenizer(num_words=10000, oov_token="<OOV>")
 
-# === Load Trained Model ===
-@st.cache_resource
-def load_trained_model(path=MODEL_PATH):
-    try:
-        if not os.path.exists(path):
-            st.error(f"❌ File model tidak ditemukan di path: {os.path.abspath(path)}")
-            return None
-        model = tf.keras.models.load_model(path)
-        return model
-    except Exception as e:
-        st.error(f"❌ Gagal memuat model: {e}")
-        return None
-
-# === Text Cleaning ===
-def clean_text(text):
+# Fungsi preprocessing
+def preprocess_text(text):
     text = text.lower()
-    text = re.sub(r'https?://\S+|www\.\S+', '', text)
-    text = re.sub(r'<.*?>', '', text)
-    text = re.sub(r'[%s]' % re.escape(string.punctuation), '', text)
-    text = re.sub(r'\n', ' ', text)
-    text = re.sub(r'\w*\d\w*', '', text)
-    return text.strip()
+    text = re.sub(r"http\S+|www.\S+", "", text)
+    text = re.sub(r"@\w+|#\w+", "", text)
+    text = re.sub(r"[^a-zA-Z\s]", "", text)
+    text = text.translate(str.maketrans("", "", string.punctuation))
 
-# === Prediction ===
-def predict_sentiment(model, tokenizer, text, maxlen=100):
-    cleaned_text = clean_text(text)
-    sequence = tokenizer.texts_to_sequences([cleaned_text])
-    padded = pad_sequences(sequence, maxlen=maxlen)
-    prediction = model.predict(padded, verbose=0)
-    labels = ['Normal', 'Stress', 'Depression']
-    predicted_label = labels[prediction.argmax()]
-    return predicted_label, prediction.max() * 100
+    # Tokenisasi, stopwords, dan lemmatization
+    words = text.split()
+    stop_words = set(stopwords.words("english"))
+    lemmatizer = WordNetLemmatizer()
+    cleaned_words = [lemmatizer.lemmatize(word) for word in words if word not in stop_words]
 
-# === Main App ===
-def main():
-    st.title("🌱 Mental Health Text Analysis")
-    st.markdown("This tool predicts whether the input text relates to **Normal**, **Stress**, or **Depression**.")
+    return " ".join(cleaned_words)
 
-    input_text = st.text_area("Enter your text here:", height=200)
+# Antarmuka Streamlit
+st.title("Mental Health Prediction (LSTM)")
+st.write("Aplikasi ini memprediksi apakah teks yang Anda masukkan berkaitan dengan **Anxiety** atau **Depression**.")
 
-    if st.button("Analyze Text"):
-        if not input_text.strip():
-            st.warning("Please enter some text to analyze.")
+input_text = st.text_area("Masukkan teks di sini:")
+
+if st.button("Prediksi"):
+    if input_text.strip() == "":
+        st.warning("Silakan masukkan teks terlebih dahulu.")
+    else:
+        cleaned_text = preprocess_text(input_text)
+        sequence = tokenizer.texts_to_sequences([cleaned_text])
+        padded_sequence = pad_sequences(sequence, maxlen=100, padding='post', truncating='post')
+
+        prediction = model.predict(padded_sequence)
+        label_index = np.argmax(prediction)
+
+        if label_index == 0:
+            st.success("Hasil prediksi: **Anxiety**")
         else:
-            tokenizer = load_tokenizer()
-            model = load_trained_model()
-
-            if model and tokenizer:
-                predicted_label, confidence = predict_sentiment(model, tokenizer, input_text)
-
-                if predicted_label == 'Normal':
-                    st.markdown(f"""
-                    <div style='background-color:#E8E8FF; padding:15px; border-radius:10px;'>
-                        <h3 style='margin:0; color:#00008B;'>Normal Sentiment Detected</h3>
-                        <p>Confidence: {confidence:.1f}%</p>
-                    </div>
-                    """, unsafe_allow_html=True)
-                elif predicted_label == 'Stress':
-                    st.markdown(f"""
-                    <div style='background-color:#FFE2E2; padding:15px; border-radius:10px;'>
-                        <h3 style='margin:0; color:#D8000C;'>Stress Detected</h3>
-                        <p>Confidence: {confidence:.1f}%</p>
-                    </div>
-                    """, unsafe_allow_html=True)
-                else:
-                    st.markdown(f"""
-                    <div style='background-color:#F3F3F3; padding:15px; border-radius:10px;'>
-                        <h3 style='margin:0; color:#8B0000;'>Depression Detected</h3>
-                        <p>Confidence: {confidence:.1f}%</p>
-                    </div>
-                    """, unsafe_allow_html=True)
-
-                st.markdown("""
-                <div style='font-size:0.8em; margin-top:20px;'>
-                <b>Disclaimer:</b> This tool provides only a computational analysis and is not a substitute for professional mental health evaluation.
-                Please consult a qualified healthcare provider if needed.
-                </div>
-                """, unsafe_allow_html=True)
-
-            else:
-                st.error("Model atau tokenizer tidak tersedia. Periksa kembali file dan path-nya.")
-
-if __name__ == '__main__':
-    main()
+            st.success("Hasil prediksi: **Depression**")
