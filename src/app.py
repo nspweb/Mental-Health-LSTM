@@ -14,7 +14,7 @@ nltk.download('stopwords')
 nltk.download('wordnet')
 
 # Load model (gunakan path relatif untuk deployment)
-model = tf.keras.models.load_model('D:\3 matkul\deep learning\Mental Health Using LSTM\src\model_mental_health_v1.h5')
+model = tf.keras.models.load_model('model_mental_health_v1.h5')
 
 # Inisialisasi Tokenizer (harus sama dengan saat training)
 tokenizer = Tokenizer(num_words=10000, oov_token="<OOV>")
