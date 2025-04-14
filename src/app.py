@@ -47,7 +47,7 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-st.title("🌱 Mental Health Prediction (LSTM) 🌱")
+st.title("🌱 Mental Health Prediction (LSTM)")
 st.markdown("""
 Aplikasi ini memprediksi apakah teks yang Anda masukkan berkaitan dengan **Anxiety** atau **Depression**.
 """)
