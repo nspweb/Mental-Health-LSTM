@@ -10,6 +10,7 @@ from nltk.corpus import stopwords
 from nltk.stem import WordNetLemmatizer
 from tensorflow.keras.preprocessing.sequence import pad_sequences
 
+
 # Download resource NLTK jika belum
 nltk.download('stopwords')
 nltk.download('wordnet')
@@ -18,12 +19,19 @@ nltk.download('wordnet')
 model_path = os.path.join('src', 'model_mental_health_v1.h5')
 tokenizer_path = os.path.join('src', 'tokenizer.pickle')
 
-# Load model
+# Modifikasi bagian loading model di app.py
 try:
-    model = tf.keras.models.load_model(model_path)
+    model = tf.keras.models.load_model(model_path, compile=False)
+    # Kompilasi manual setelah loading
+    model.compile(
+        loss='sparse_categorical_crossentropy',
+        optimizer='adam',
+        metrics=['accuracy']
+    )
     print(f"Model berhasil dimuat dari {model_path}")
 except Exception as e:
     st.error(f"Error loading model: {e}")
+    print(f"Error detail: {e}")
     st.stop()
 
 # Load tokenizer dari file pickle
