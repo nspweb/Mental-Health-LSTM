@@ -66,6 +66,13 @@ def main():
     This tool predicts whether the text you input relates to **Anxiety** or **Depression**.
     """)
     
+    # Debug: Check if tokenizer file exists
+    debug_tokenizer_path = r'D:\3 matkul\Mental Health Using LSTM\src\tokenizer.pickle'
+    debug_model_path = r'D:\3 matkul\Mental Health Using LSTM\src\model_mental_health_v1.keras'
+
+    st.write("📂 Tokenizer file exists:", os.path.exists(debug_tokenizer_path))
+    st.write("📂 Model file exists:", os.path.exists(debug_model_path))
+
     # Text input
     input_text = st.text_area("Enter your text here:", height=200)
     
